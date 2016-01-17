@@ -4,7 +4,7 @@
  * -------------------------------
  * Implement ray tracer here.
  */
-
+#include <algorithm>
 #define SET_RED(P, C)   (P = (((P) & 0x00ffffff) | ((C) << 24)))
 #define SET_GREEN(P, C)  (P = (((P) & 0xff00ffff) | ((C) << 16)))
 #define SET_BLUE(P, C) (P = (((P) & 0xffff00ff) | ((C) << 8)))
