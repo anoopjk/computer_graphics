@@ -1,0 +1,207 @@
+RayTracer Assignment
+
+Name -Anoop Jakka
+id - 861187984
+
+
+
+//I used some information from online c++ tutorials of ray_tracer but I got significant help from reading textbook chapter -4 
+I mentioned the pages from this chapter in the text book
+// I added lambertian and specular shading models inorder to use them in phong model
+// Lambertian model
+//Ld = kd*I*max(0, n · l)
+Vector_3D<double> Lambertian_shading(const Ray& ray,
+									 const Light* light,
+									 const Vector_3D<double>& color_diffuse,
+									 const Vector_3D<double>& intersection_point,
+									 const Vector_3D<double>& same_side_normal)
+{
+  page82- chapter 4:
+  equation for lambertion shading
+  L = kd I max(0, n · l) 
+  where L is the pixel color; kd is the diffuse coefficient, or the surface color; and
+  I is the intensity of the light source. l is light ray from intersection point to light, 
+  n is normal to the surface of the plane or object.
+  using ray information and light position find l,n and using emitted light function get the light intensity 
+  calculate color using the given equation for each color channel and return it
+}
+// specular model
+//,
+Vector_3D<double> Specular_shading(const Ray& ray,
+								   const Light* light,
+								   const Vector_3D<double>& color_specular,
+								   const Vector_3D<double>& intersection_point,
+								   const Vector_3D<double>& same_side_normal, 
+								   const double specular_power)
+{
+page83 
+	h = v+l/ magnitude(v+l)
+	v is view ray from intersection point to camera
+Ls = ks*I*max(0, n · h)^p 
+where ks is the specular coefficient, or the specular color, of the surface.
+p is the specular power
+ calculate h from v and l and then we get the other values in same way as lambertian shading
+ and then substitute in equation to get the color
+}
+//--------------------------------------------------------------------------------
+// Shader
+//--------------------------------------------------------------------------------
+Vector_3D<double> Phong_Shader::
+Shade_Surface(const Ray& ray,const Object& intersection_object,const Vector_3D<double>& intersection_point,const Vector_3D<double>& same_side_normal) const
+{
+    Vector_3D<double> color;
+
+    // TODO: determine the color
+	In this function I implemented shadow enabling or disabling.
+	
+	using the given ray information , intersection point genreate rays from ground plane
+	
+	for each light do
+	  for each object in the scene do
+	    check if the ray emerging from ground plane hits the object(shadow) or it is directly going
+		going to the light
+		set that ray to shadow ray
+	  if(neither shadows are enabled nor the ray is a shadow ray)
+	   calculate color = sum of ambient , lambertian and specular models
+        that is  L = ka Ia +[kd Ii max(0, n · li) + ks Ii max(0, n · hi)^p]  from page 84 eqn 4.4
+	finally add the ambient shading to the color 
+	I didn't full understand how to calculate Ia, ambient intensity. I assumed it same as I .In the final ambient Intensity is reduced to 25% to get desired results
+   
+    return color;
+}
+
+Vector_3D<double> Reflective_Shader::
+Shade_Surface(const Ray& ray,const Object& intersection_object,const Vector_3D<double>& intersection_point,const Vector_3D<double>& same_side_normal) const
+{
+    Vector_3D<double> color;
+
+    // TODO: determine the color
+	using the equations 
+	r = d − 2(d · n)n, color c = c + kmraycolor(p+ sr, 	,∞) from page87 , I generated reflected rays and its color on image plane using the two equations.I did't fully understand the bouncing
+	part though, as I tried to use while loop inside, it is giving too much brightness
+
+    return color;
+}
+
+Vector_3D<double> Flat_Shader::
+Shade_Surface(const Ray& ray,const Object& intersection_object,const Vector_3D<double>& intersection_point,const Vector_3D<double>& same_side_normal) const
+{
+    return color;
+}
+
+//--------------------------------------------------------------------------------
+// Objects
+//--------------------------------------------------------------------------------
+// determine if the ray intersects with the sphere
+// if there is an intersection, set t_max, current_object, and semi_infinite as appropriate and return true
+bool Sphere::
+Intersection(Ray& ray) const
+{
+    // TODO
+	This is straight forward using the equations and checking the cases where the
+	discrminant is >0, =0, <0
+	if discrminant >0
+	  we find two t values and which ever is smaller and greater than small_t is used to 
+	  set ray.t_max and then change the other properties of the ray and return true
+	 if discrminant ==0
+	  calculate t and check if it >small_t 
+	  do the same as in the above case and return true
+	 if neither case is valid,
+	  don't changeray properties just return false
+	sphere -ray intersection is given by
+	 (d · d)t^2 + 2*d·(e − c)*t + (e − c)·(e − c) − R^2 = 0.
+    return false;
+}
+
+Vector_3D<double> Sphere::
+Normal(const Vector_3D<double>& location) const
+{
+    Vector_3D<double> normal;
+    // TODO: set the normal
+	n = (p-center)/radius , using this we get the normal
+    return normal;
+}
+
+// determine if the ray intersects with the sphere
+// if there is an intersection, set t_max, current_object, and semi_infinite as appropriate and return true
+bool Plane::
+Intersection(Ray& ray) const
+{
+    // TODO
+	we first check if the ray intersects the plane using (p-q).N > small_t and then if it does
+	find t = (x1- p).N / d.N. 
+	if (t> small_t)
+	 change the ray properties and return true
+    
+	
+	return false;
+}
+
+Vector_3D<double> Plane::
+Normal(const Vector_3D<double>& location) const
+{
+    return normal;
+}
+//--------------------------------------------------------------------------------
+// Camera
+//--------------------------------------------------------------------------------
+// Find the world position of the input pixel
+Vector_3D<double> Camera::
+World_Position(const Vector_2D<int>& pixel_index)
+{
+    Vector_3D<double> result;
+    // TODO 
+	
+	equations in page75 helped me in finding the 
+	world location of the pixel points on the image plane.
+    
+	
+	return result;
+}
+//--------------------------------------------------------------------------------
+// Render_World
+//--------------------------------------------------------------------------------
+// Find the closest object of intersection and return a pointer to it
+//   if the ray intersects with an object, then ray.t_max, ray.current_object, and ray.semi_infinite will be set appropriately
+//   if there is no intersection do not modify the ray and return 0
+const Object* Render_World::
+Closest_Intersection(Ray& ray)
+{
+    // TODO
+    we check the intersectin points with the objects in the scene using the object intersection function
+	if there are any intersections, if the closes_obj is set.
+	
+	return 0;
+}
+
+// set up the initial view ray and call 
+void Render_World::
+Render_Pixel(const Vector_2D<int>& pixel_index)
+{
+    // TODO
+    Ray ray; // TODO: set up the initial view ray here
+    we set the ray properties using camera position in world and pixel position in world
+	and the use castray function to get the color at that pixel and we set this color to that pixel.
+	
+    Ray dummy_root;
+    Vector_3D<double> color=Cast_Ray(ray,dummy_root);
+    camera.film.Set_Pixel(pixel_index,Pixel_Color(color));
+}
+
+// cast ray and return the color of the closest intersected surface point, 
+// or the background color if there is no object intersection
+Vector_3D<double> Render_World::
+Cast_Ray(Ray& ray,const Ray& parent_ray)
+{
+    // TODO
+    Vector_3D<double> color;
+	
+	we find the closest object to the ray in the scene and if there is any,
+	we set the color to the one returned by the shade surface function with respect to that objects
+	
+	if there are no intersections, color is set to the background color.
+
+    // determine the color here
+
+    return color;
+}
